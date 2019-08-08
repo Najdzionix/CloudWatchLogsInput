@@ -1,10 +1,6 @@
-package org.logstashplugins;
+package com.kn.logstash.plugin;
 
-import co.elastic.logstash.api.Configuration;
-import co.elastic.logstash.api.Context;
-import co.elastic.logstash.api.Input;
-import co.elastic.logstash.api.LogstashPlugin;
-import co.elastic.logstash.api.PluginConfigSpec;
+import co.elastic.logstash.api.*;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
