@@ -1,10 +1,7 @@
 package com.kn.cloudwatch.plugin;
 
-import co.elastic.logstash.api.Configuration;
-import co.elastic.logstash.api.Context;
-import co.elastic.logstash.api.Input;
-import co.elastic.logstash.api.LogstashPlugin;
-import co.elastic.logstash.api.PluginConfigSpec;
+import co.elastic.logstash.api.*;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
@@ -14,7 +11,7 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
-// class name must match plugin name
+@Log4j2
 @LogstashPlugin(name="cloud_watch_logs_input")
 public class CloudWatchLogsInput implements Input {
 
@@ -49,6 +46,8 @@ public class CloudWatchLogsInput implements Input {
         // a finite sequence of events should loop until that sequence is exhausted or until they
         // receive a stop request, whichever comes first.
 
+        log.info("Testttttttttttttttttttttt!");
+        
         int eventCount = 0;
         try {
             while (!stopped && eventCount < count) {

@@ -4,7 +4,7 @@ echo 'Build plugin'
 #rm *.gem
 #rm *.gemspec
 #rm docker/logstash/plugin/*.gem
-gradle clean
+./gradlew clean
 
 #build
 ./gradlew gem
