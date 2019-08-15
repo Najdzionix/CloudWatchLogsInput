@@ -15,9 +15,9 @@ public class ReadCloudWatchLogsTest {
 
     @Before
     public void setup() {
+        //Use host aws profile to connect AWS
         String property = System.getProperty("user.home");
-        System.out.println(property);
-        readCloudWatchLogs = new ReadCloudWatchLogs(Paths.get(property, ".aws/credentials").toString(), "");
+        readCloudWatchLogs = new ReadCloudWatchLogs(Paths.get(property, ".aws/credentials").toString(), "/aws/");
     }
     @Test
     public void shouldReadLogsFromAWS() {
@@ -26,7 +26,7 @@ public class ReadCloudWatchLogsTest {
         // When
 
         // Then
-        readCloudWatchLogs.read();
+//        readCloudWatchLogs.read();
     }
 
 }

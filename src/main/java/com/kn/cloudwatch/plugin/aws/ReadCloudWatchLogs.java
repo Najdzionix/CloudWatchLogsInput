@@ -8,6 +8,7 @@ import com.amazonaws.services.logs.model.*;
 import lombok.extern.log4j.Log4j2;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 
 /**
@@ -25,6 +26,8 @@ public class ReadCloudWatchLogs {
         this.groupName = groupName;
         credential = new AwsCredential(credentialPath);
         awsClient = initAwsClient();
+        FindLogGroup findLogGroup = new FindLogGroup(awsClient);
+        List<String> logGroups = findLogGroup.findLogGroup(groupName);
     }
 
     private AWSLogs initAwsClient() {
