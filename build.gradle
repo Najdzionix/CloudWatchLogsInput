@@ -59,6 +59,8 @@ dependencies {
     compile 'org.apache.logging.log4j:log4j-core:2.9.1'
     compile fileTree(dir: LOGSTASH_CORE_PATH, include: "**/logstash-core-?.?.?.jar")
 
+    compile group: 'com.amazonaws', name: 'aws-java-sdk-logs', version: '1.11.610'
+
     testCompile 'junit:junit:4.12'
     testCompile 'org.jruby:jruby-complete:9.1.13.0'
 }
