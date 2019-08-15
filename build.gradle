@@ -16,8 +16,8 @@ pluginInfo.authors         = ['Elasticsearch']
 pluginInfo.email           = ['info@elastic.co']
 pluginInfo.homepage        = "http://www.elastic.co/guide/en/logstash/current/index.html"
 pluginInfo.pluginType      = "input"
-pluginInfo.pluginClass     = "JavaInputExample"
-pluginInfo.pluginName      = "java_input_example" // must match the @LogstashPlugin annotation in the main plugin class
+pluginInfo.pluginClass     = "CloudWatchLogsInput"
+pluginInfo.pluginName      = "cloud_watch_logs_input" // must match the @LogstashPlugin annotation in the main plugin class
 // ===========================================================================
 
 sourceCompatibility = 1.8
