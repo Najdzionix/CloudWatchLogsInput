@@ -1,6 +1,7 @@
 package com.kn.cloudwatch.plugin;
 
 import co.elastic.logstash.api.*;
+import com.kn.cloudwatch.plugin.aws.ReadCloudWatchLogs;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 
@@ -12,18 +13,18 @@ import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
 @Log4j2
-@LogstashPlugin(name="cloud_watch_logs_input")
+@LogstashPlugin(name = "cloud_watch_logs_input")
 public class CloudWatchLogsInput implements Input {
 
     public static final PluginConfigSpec<Long> EVENT_COUNT_CONFIG =
             PluginConfigSpec.numSetting("count", 3);
 
-    public static final PluginConfigSpec<String> PREFIX_CONFIG =
-            PluginConfigSpec.stringSetting("prefix", "message");
+    protected static final PluginConfigSpec<String> LOG_GROUP_NAME = PluginConfigSpec.stringSetting("log_group_name", null, false, true);
+    private static final PluginConfigSpec<String> AWS_CREDENTIALS_PATH = PluginConfigSpec.stringSetting("aws_credential_path", "/aws/credentials/");
     private final CountDownLatch done = new CountDownLatch(1);
+    private final ReadCloudWatchLogs reader;
     private String id;
     private long count;
-    private String prefix;
     private volatile boolean stopped;
 
     // all plugins must provide a constructor that accepts id, Configuration, and Context
@@ -31,7 +32,8 @@ public class CloudWatchLogsInput implements Input {
         // constructors should validate configuration options
         this.id = id;
         count = config.get(EVENT_COUNT_CONFIG);
-        prefix = config.get(PREFIX_CONFIG);
+        reader = new ReadCloudWatchLogs(config.get(AWS_CREDENTIALS_PATH), config.get(LOG_GROUP_NAME));
+
     }
 
     @Override
@@ -46,14 +48,14 @@ public class CloudWatchLogsInput implements Input {
         // a finite sequence of events should loop until that sequence is exhausted or until they
         // receive a stop request, whichever comes first.
 
-        log.info("Testttttttttttttttttttttt!");
-        
+        log.info("Start cloudwatch logs input ...");
+
         int eventCount = 0;
         try {
             while (!stopped && eventCount < count) {
                 eventCount++;
                 consumer.accept(Collections.singletonMap("message",
-                        prefix + " " + StringUtils.center(eventCount + " of " + count, 20)));
+                         " " + StringUtils.center(eventCount + " of " + count, 20)));
             }
         } finally {
             stopped = true;
@@ -74,7 +76,7 @@ public class CloudWatchLogsInput implements Input {
     @Override
     public Collection<PluginConfigSpec<?>> configSchema() {
         // should return a list of all configuration options for this plugin
-        return Arrays.asList(EVENT_COUNT_CONFIG, PREFIX_CONFIG);
+        return Arrays.asList(EVENT_COUNT_CONFIG, LOG_GROUP_NAME, AWS_CREDENTIALS_PATH);
     }
 
     @Override

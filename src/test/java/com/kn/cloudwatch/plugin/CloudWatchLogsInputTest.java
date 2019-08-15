@@ -20,7 +20,7 @@ public class CloudWatchLogsInputTest {
         String prefix = "This is message";
         long eventCount = 5;
         Map<String, Object> configValues = new HashMap<>();
-        configValues.put(CloudWatchLogsInput.PREFIX_CONFIG.name(), prefix);
+        configValues.put(CloudWatchLogsInput.LOG_GROUP_NAME.name(), prefix);
         configValues.put(CloudWatchLogsInput.EVENT_COUNT_CONFIG.name(), eventCount);
         Configuration config = new ConfigurationImpl(configValues);
         CloudWatchLogsInput input = new CloudWatchLogsInput("test-id", config, null);

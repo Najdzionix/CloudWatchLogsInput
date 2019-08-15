@@ -1,8 +1,6 @@
 package com.kn.cloudwatch.plugin.aws;
 
 import com.amazonaws.ClientConfiguration;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.logs.AWSLogs;
 import com.amazonaws.services.logs.AWSLogsClientBuilder;
@@ -17,22 +15,31 @@ import java.time.LocalDateTime;
  * email:kamilnadlonek@gmail.com
  */
 @Log4j2
-class ReadCloudWatchLogs {
+public class ReadCloudWatchLogs {
 
-    protected void read() {
-        final String groupName = "/var/log/eb-docker/containers/eb-current-app/stdouterr.log";
-        LocalDateTime now = LocalDateTime.now().minusMonths(1);
+    private final AwsCredential credential;
+    private final AWSLogs awsClient;
+    private final String groupName;
 
+    public ReadCloudWatchLogs(String credentialPath, String groupName) {
+        this.groupName = groupName;
+        credential = new AwsCredential(credentialPath);
+        awsClient = initAwsClient();
+    }
+
+    private AWSLogs initAwsClient() {
         ClientConfiguration clientConfig = new ClientConfiguration();
-
         AWSLogsClientBuilder builder = AWSLogsClientBuilder.standard();
-
-        AWSLogs logsClient = builder.withCredentials(new AWSStaticCredentialsProvider(new ProfileCredentialsProvider().getCredentials()))
+        return builder.withCredentials(credential.getProvider())
                 .withRegion(Regions.EU_WEST_1)
                 .withClientConfiguration(clientConfig).build();
+    }
+
+    public void read() {
+        LocalDateTime now = LocalDateTime.now().minusMonths(1);
 
         DescribeLogStreamsRequest describeLogStreamsRequest = new DescribeLogStreamsRequest().withLogGroupName(groupName);
-        DescribeLogStreamsResult describeLogStreamsResult = logsClient.describeLogStreams(describeLogStreamsRequest);
+        DescribeLogStreamsResult describeLogStreamsResult = awsClient.describeLogStreams(describeLogStreamsRequest);
 
         for (LogStream logStream : describeLogStreamsResult.getLogStreams()) {
             GetLogEventsRequest getLogEventsRequest = new GetLogEventsRequest()
@@ -41,7 +48,7 @@ class ReadCloudWatchLogs {
                     .withLogGroupName(groupName)
                     .withLogStreamName(logStream.getLogStreamName());
 
-            GetLogEventsResult result = logsClient.getLogEvents(getLogEventsRequest);
+            GetLogEventsResult result = awsClient.getLogEvents(getLogEventsRequest);
             System.out.println("Size: " + result.getEvents().size());
 //            result.getEvents().forEach(outputLogEvent -> {
 //                System.out.println(outputLogEvent.getMessage());

@@ -3,6 +3,8 @@ package com.kn.cloudwatch.plugin.aws;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.nio.file.Paths;
+
 /**
  * Created by Kamil Nadłonek on 15-08-2019
  * email:kamilnadlonek@gmail.com
@@ -13,7 +15,9 @@ public class ReadCloudWatchLogsTest {
 
     @Before
     public void setup() {
-        readCloudWatchLogs = new ReadCloudWatchLogs();
+        String property = System.getProperty("user.home");
+        System.out.println(property);
+        readCloudWatchLogs = new ReadCloudWatchLogs(Paths.get(property, ".aws/credentials").toString(), "");
     }
     @Test
     public void shouldReadLogsFromAWS() {
