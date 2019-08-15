@@ -3,14 +3,14 @@ echo 'Build plugin'
 # remove older version
 #rm *.gem
 #rm *.gemspec
-rm docker/logstash/plugin/*.gem
+#rm docker/logstash/plugin/*.gem
 gradle clean
 
 #build
 ./gradlew gem
 
 echo 'Copy gem file '
-cp *.gem docker/logstash/plugin/
+cp -f *.gem docker/logstash/plugin/
 ls docker/logstash/plugin
 
 cd docker
