@@ -1,4 +1,4 @@
-package org.logstashplugins;
+package com.kn.cloudwatch.plugin;
 
 import co.elastic.logstash.api.Configuration;
 import co.elastic.logstash.api.Context;

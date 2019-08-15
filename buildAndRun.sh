@@ -15,7 +15,7 @@ ls docker/logstash/plugin
 
 cd docker
 echo 'Build docker image'
-docker-compose build
+docker-compose build --force-rm
 
 echo 'Run logstash'
 docker-compose up 
