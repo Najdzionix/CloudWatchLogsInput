@@ -32,6 +32,7 @@ out/
 
 *.gemspec
 Gemfile*
+*.gem
 
 .gradle
 settings.gradle
