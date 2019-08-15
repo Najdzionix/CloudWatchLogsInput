@@ -4,12 +4,6 @@
 # Log file
 *.log
 
-# BlueJ files
-*.ctxt
-
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
-
 # Package Files #
 *.jar
 *.war
@@ -28,5 +22,17 @@ hs_err_pid*
 *.iws
 .idea/
 /.idea/
-/vendor/
-/lib/
+
+#Custom
+lib/
+vendor/
+.bundle/
+build/
+out/
+
+*.gemspec
+Gemfile*
+
+.gradle
+settings.gradle
+gradle.properties
