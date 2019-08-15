@@ -1,8 +1,7 @@
 package com.kn.cloudwatch.plugin.aws;
 
 import com.amazonaws.services.logs.AWSLogs;
-import com.amazonaws.services.logs.model.DescribeLogGroupsRequest;
-import com.amazonaws.services.logs.model.DescribeLogGroupsResult;
+import com.amazonaws.services.logs.model.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -16,7 +15,7 @@ import java.util.List;
  */
 @Log4j2
 @AllArgsConstructor(access = AccessLevel.MODULE)
-class FindLogGroup {
+class LogGroupService {
 
     private final AWSLogs awsLogs;
 
@@ -35,5 +34,19 @@ class FindLogGroup {
         }
         log.info("Found groups:{}", groups.size());
         return groups;
+    }
+
+    List<LogStream> getStreamForGroup(String name) {
+        List<LogStream> streams = new ArrayList<>();
+        String token = "";
+        while (token != null) {
+            DescribeLogStreamsRequest describeLogStreamsRequest = new DescribeLogStreamsRequest().withLogGroupName(name)
+                    .withNextToken(token.equals("") ? null : token);
+            DescribeLogStreamsResult describeLogStreamsResult = awsLogs.describeLogStreams(describeLogStreamsRequest);
+            streams.addAll(describeLogStreamsResult.getLogStreams());
+            token = describeLogStreamsRequest.getNextToken();
+        }
+
+        return streams;
     }
 }
