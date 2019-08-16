@@ -21,11 +21,13 @@ public class ReadCloudWatchLogs {
     private final AWSLogs awsClient;
     private final List<String> groups;
     private final LogGroupService logGroupService;
+    private final LogStreamService logStreamService;
 
     public ReadCloudWatchLogs(String credentialPath, String groupName) {
         credential = new AwsCredential(credentialPath);
         awsClient = initAwsClient();
         logGroupService = new LogGroupService(awsClient);
+        logStreamService = new LogStreamService(awsClient);
         groups = logGroupService.findLogGroup(groupName);
     }
 
@@ -38,14 +40,15 @@ public class ReadCloudWatchLogs {
     }
 
     public void read() {
-        groups.forEach( group ->
-                processLogStream(logGroupService.getStreamForGroup(group)));
+        groups.forEach(group ->
+                processLogStream(logGroupService.getStreamForGroup(group), group));
     }
 
-    private void processLogStream(List<LogStream> streams) {
-         streams.forEach(stream -> {
-                  log.info(stream.getLogStreamName());
-         });
-        
+    private void processLogStream(List<LogStream> streams, String groupName) {
+        streams.forEach(stream -> {
+            log.error(stream.getLogStreamName());
+            logStreamService.readLogs(stream, groupName);
+        });
+
     }
 }
