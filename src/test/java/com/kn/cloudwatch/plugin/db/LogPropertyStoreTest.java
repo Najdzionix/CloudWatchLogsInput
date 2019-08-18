@@ -36,7 +36,7 @@ public class LogPropertyStoreTest {
         // Given
         LastLogEvent logEvent = createLogEvent("test_app", "instance_id");
         // When
-        LastLogEvent save = store.save(logEvent);
+        LastLogEvent save = store.saveOrUpdate(logEvent);
 
         // Then
         Optional<LastLogEvent> lastLogEvent = store.get(save.getStoreId());
@@ -46,9 +46,9 @@ public class LogPropertyStoreTest {
     @Test
     public void shouldFindLogEventByStreamAndGroup() {
         // Given
-        store.save(createLogEvent("test_app", "instance_id"));
-        store.save(createLogEvent("test_app", "instance_id_2"));
-        store.save(createLogEvent("test_app2", "instance_id"));
+        store.saveOrUpdate(createLogEvent("test_app", "instance_id"));
+        store.saveOrUpdate(createLogEvent("test_app", "instance_id_2"));
+        store.saveOrUpdate(createLogEvent("test_app2", "instance_id"));
         // When
         Optional<LastLogEvent> lastLogEvent = store.find("test_app", "instance_id");
 

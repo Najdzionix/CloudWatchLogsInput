@@ -8,6 +8,8 @@ import org.jetbrains.annotations.NotNull;
 import java.io.Closeable;
 import java.util.Optional;
 
+import static com.kn.cloudwatch.plugin.db.EntityLogPropertyName.*;
+
 /**
  * Created by Kamil Nadłonek on 18-08-2019
  * email:kamilnadlonek@gmail.com
@@ -23,8 +25,20 @@ public class LogPropertyStore implements Closeable {
 
     }
 
-    public LastLogEvent save(LastLogEvent logEvent) {
-        EntityId entityId = store.computeInExclusiveTransaction(txn -> createRecord(txn, logEvent));
+    public LastLogEvent saveOrUpdate(LastLogEvent logEvent) {
+        EntityId entityId = store.computeInExclusiveTransaction(txn -> {
+                    if (logEvent.getStoreId() == null) {
+                        return createRecord(txn, logEvent);
+                    } else {
+                        PersistentEntity entity = store.getEntity(logEvent.getStoreId());
+                        entity.setProperty(EVENT_ID.name(), logEvent.getEventId());
+                        entity.setProperty(TIMESTAMP.name(), logEvent.getTimestamp());
+                        txn.saveEntity(entity);
+                        return entity.getId();
+                    }
+                }
+        );
+
         log.error(entityId);
         logEvent.setStoreId(entityId);
         return logEvent;
@@ -38,9 +52,9 @@ public class LogPropertyStore implements Closeable {
 
     public Optional<LastLogEvent> find(final String groupName, final String streamName) {
         LastLogEvent event = store.computeInReadonlyTransaction(txn -> {
-            EntityIterable entities = txn.find(LOG_EVENT, "logGroup", groupName);
+            EntityIterable entities = txn.find(LOG_EVENT, LOG_GROUP.name(), groupName);
             for (Entity entity : entities) {
-                if (entity.getProperty("logStream").equals(streamName)) {
+                if (entity.getProperty(LOG_STREAM.name()).equals(streamName)) {
                     return mapToLastLogEvent(entity);
                 }
             }
@@ -52,20 +66,20 @@ public class LogPropertyStore implements Closeable {
 
     private LastLogEvent mapToLastLogEvent(Entity entity) {
         return LastLogEvent.builder()
-                .eventId((String) entity.getProperty("eventId"))
-                .groupName((String) entity.getProperty("logGroup"))
-                .logStreamName((String) entity.getProperty("logStream"))
-                .timestamp((Long) entity.getProperty("timestamp"))
+                .eventId((String) entity.getProperty(EVENT_ID.name()))
+                .groupName((String) entity.getProperty(LOG_GROUP.name()))
+                .logStreamName((String) entity.getProperty(LOG_STREAM.name()))
+                .timestamp((Long) entity.getProperty(TIMESTAMP.name()))
                 .storeId(entity.getId())
                 .build();
     }
 
     private @NotNull EntityId createRecord(StoreTransaction txn, LastLogEvent logEvent) {
         final Entity record = txn.newEntity(LOG_EVENT);
-        record.setProperty("logGroup", logEvent.getGroupName());
-        record.setProperty("logStream", logEvent.getLogStreamName());
-        record.setProperty("eventId", logEvent.getEventId());
-        record.setProperty("timestamp", logEvent.getTimestamp());
+        record.setProperty(LOG_GROUP.name(), logEvent.getGroupName());
+        record.setProperty(LOG_STREAM.name(), logEvent.getLogStreamName());
+        record.setProperty(EVENT_ID.name(), logEvent.getEventId());
+        record.setProperty(TIMESTAMP.name(), logEvent.getTimestamp());
         return record.getId();
     }
 
@@ -77,7 +91,7 @@ public class LogPropertyStore implements Closeable {
         }
     }
 
-    void clear(){
+    void clear() {
         store.clear();
     }
 }
