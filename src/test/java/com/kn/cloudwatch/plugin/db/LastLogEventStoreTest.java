@@ -16,13 +16,13 @@ import static org.junit.Assert.assertTrue;
  * Created by Kamil Nadłonek on 18-08-2019
  * email:kamilnadlonek@gmail.com
  */
-public class LogPropertyStoreTest {
+public class LastLogEventStoreTest {
 
-    private LogPropertyStore store;
+    private LastLogEventStore store;
 
     @Before
     public void setup() {
-        store = new LogPropertyStore("/tmp/.testCloudWatchLogsInput");
+        store = new LastLogEventStore("/tmp/.testCloudWatchLogsInput");
     }
 
     @After
@@ -57,6 +57,26 @@ public class LogPropertyStoreTest {
         LastLogEvent logEvent = lastLogEvent.get();
         assertEquals("test_app", logEvent.getGroupName());
         assertEquals("instance_id", logEvent.getLogStreamName());
+    }
+
+    @Test
+    public void shouldUpdateLogEvent() throws InterruptedException {
+        // Given
+        LastLogEvent first = createLogEvent("test_app", "instance_id");
+        store.saveOrUpdate(first);
+        Thread.sleep(1000);
+        LastLogEvent second = createLogEvent("test_app", "instance_id");
+        second.setStoreId(first.getStoreId());
+
+        // When
+        store.saveOrUpdate(second);
+
+        // Then
+        Optional<LastLogEvent> lastLogEvent = store.find("test_app", "instance_id");
+        assertTrue(lastLogEvent.isPresent());
+        LastLogEvent lastEvent = lastLogEvent.get();
+        assertEquals(second.getEventId(), lastEvent.getEventId());
+        assertEquals(second.getTimestamp(), lastEvent.getTimestamp());
     }
 
 

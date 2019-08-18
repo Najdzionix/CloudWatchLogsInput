@@ -15,12 +15,12 @@ import static com.kn.cloudwatch.plugin.db.EntityLogPropertyName.*;
  * email:kamilnadlonek@gmail.com
  */
 @Log4j2
-public class LogPropertyStore implements Closeable {
+public class LastLogEventStore implements Closeable {
 
     private static final String LOG_EVENT = "logEvent";
     private final PersistentEntityStoreImpl store;
 
-    public LogPropertyStore(String pathStore) {
+    public LastLogEventStore(String pathStore) {
         store = PersistentEntityStores.newInstance(pathStore);
 
     }
@@ -54,7 +54,7 @@ public class LogPropertyStore implements Closeable {
         LastLogEvent event = store.computeInReadonlyTransaction(txn -> {
             EntityIterable entities = txn.find(LOG_EVENT, LOG_GROUP.name(), groupName);
             for (Entity entity : entities) {
-                if (entity.getProperty(LOG_STREAM.name()).equals(streamName)) {
+                if (streamName.equals(entity.getProperty(LOG_STREAM.name()))) {
                     return mapToLastLogEvent(entity);
                 }
             }
