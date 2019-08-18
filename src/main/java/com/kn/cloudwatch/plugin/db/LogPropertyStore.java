@@ -6,7 +6,6 @@ import lombok.extern.log4j.Log4j2;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.util.Optional;
 
 /**
@@ -72,9 +71,13 @@ public class LogPropertyStore implements Closeable {
 
 
     @Override
-    public void close() throws IOException {
-        if(store != null) {
+    public void close() {
+        if (store != null) {
             store.close();
         }
+    }
+
+    void clear(){
+        store.clear();
     }
 }
