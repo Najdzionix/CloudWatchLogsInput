@@ -5,6 +5,7 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.logs.AWSLogs;
 import com.amazonaws.services.logs.AWSLogsClientBuilder;
 import com.amazonaws.services.logs.model.LogStream;
+import com.kn.cloudwatch.plugin.db.LastLogEventStore;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.List;
@@ -22,12 +23,14 @@ public class ReadCloudWatchLogs {
     private final List<String> groups;
     private final LogGroupService logGroupService;
     private final LogStreamService logStreamService;
+    private final LastLogEventStore lastLogEventStore;
 
     public ReadCloudWatchLogs(String credentialPath, String groupName) {
         credential = new AwsCredential(credentialPath);
         awsClient = initAwsClient();
+        lastLogEventStore = new LastLogEventStore("/usr/share/logstash/data/cloud_watch_logs_input/.db");
         logGroupService = new LogGroupService(awsClient);
-        logStreamService = new LogStreamService(awsClient);
+        logStreamService = new LogStreamService(awsClient, lastLogEventStore);
         groups = logGroupService.findLogGroup(groupName);
     }
 
@@ -47,7 +50,7 @@ public class ReadCloudWatchLogs {
     private void processLogStream(List<LogStream> streams, String groupName) {
         streams.forEach(stream -> {
             log.error(stream.getLogStreamName());
-            logStreamService.readLogs(stream, groupName);
+            logStreamService.readLogs(null);
         });
 
     }

@@ -4,7 +4,8 @@ import com.amazonaws.services.logs.AWSLogs;
 import com.amazonaws.services.logs.model.FilterLogEventsRequest;
 import com.amazonaws.services.logs.model.FilterLogEventsResult;
 import com.amazonaws.services.logs.model.FilteredLogEvent;
-import com.amazonaws.services.logs.model.LogStream;
+import com.kn.cloudwatch.plugin.LastLogEvent;
+import com.kn.cloudwatch.plugin.db.LastLogEventStore;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
@@ -20,25 +21,39 @@ import java.util.List;
 class LogStreamService {
 
     private final AWSLogs awsLogs;
+    private final LastLogEventStore store;
 
-    void readLogs(LogStream logStream, String logGroup) {
+    LastLogEvent readLogs(LastLogEvent lastLogEvent) {
         List<LogEvent> result = new ArrayList<>();
         String token = "";
         while (token != null) {
-//            TODO set proper startTime 
+            LogEvent last = null;
             FilterLogEventsRequest request = new FilterLogEventsRequest()
-                    .withLogGroupName(logGroup)
-                    .withLogStreamNames(logStream.getLogStreamName())
+                    .withLogGroupName(lastLogEvent.getGroupName())
+                    .withLogStreamNames(lastLogEvent.getLogStreamName())
+                    .withStartTime(lastLogEvent.getTimestamp())
                     .withNextToken(token.equals("") ? null : token);
 
             FilterLogEventsResult filterLogEventsResult = awsLogs.filterLogEvents(request);
-            filterLogEventsResult.getEvents().forEach(e -> result.add(mapToLogEvent(e, logGroup)));
+            for (FilteredLogEvent awsLogEvent : filterLogEventsResult.getEvents()) {
+                last = mapToLogEvent(awsLogEvent, lastLogEvent.getGroupName());
+                result.add(last);
+            }
             token = filterLogEventsResult.getNextToken();
+            if (last != null) {
+                lastLogEvent = saveLastEvent(last, lastLogEvent);
+            }
         }
 
         log.error("Log events: {}", result.size());
-//        TODO save time and id last logEvent
 
+        return lastLogEvent;
+    }
+
+    private LastLogEvent saveLastEvent(LogEvent logEvent, LastLogEvent lastLogEvent) {
+        lastLogEvent.setEventId(logEvent.getEventId());
+        lastLogEvent.setTimestamp(logEvent.getTimestamp());
+        return store.saveOrUpdate(lastLogEvent);
     }
 
     private LogEvent mapToLogEvent(FilteredLogEvent awsLogEvent, String logGroupName) {

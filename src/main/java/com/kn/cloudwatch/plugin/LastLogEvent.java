@@ -12,10 +12,12 @@ import lombok.Setter;
 @Builder
 @Getter
 public class LastLogEvent {
-    private final String eventId;
-    @Setter
-    private EntityId storeId;
     private final String groupName;
     private final String logStreamName;
-    private final Long timestamp;
+    @Setter
+    private String eventId;
+    @Setter
+    private EntityId storeId;
+    @Setter
+    private Long timestamp;
 }
