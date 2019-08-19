@@ -5,9 +5,11 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.logs.AWSLogs;
 import com.amazonaws.services.logs.AWSLogsClientBuilder;
 import com.amazonaws.services.logs.model.LogStream;
+import com.kn.cloudwatch.plugin.LastLogEvent;
 import com.kn.cloudwatch.plugin.db.LastLogEventStore;
 import lombok.extern.log4j.Log4j2;
 
+import java.util.HashMap;
 import java.util.List;
 
 
@@ -19,19 +21,19 @@ import java.util.List;
 public class ReadCloudWatchLogs {
 
     private final AwsCredential credential;
-    private final AWSLogs awsClient;
-    private final List<String> groups;
     private final LogGroupService logGroupService;
     private final LogStreamService logStreamService;
-    private final LastLogEventStore lastLogEventStore;
+    private final String prefixGroup;
+    private final HashMap<String, LastLogEvent> cacheLastLogEvent;
 
     public ReadCloudWatchLogs(String credentialPath, String groupName) {
+        this.prefixGroup = groupName;
+        cacheLastLogEvent = new HashMap<>();
         credential = new AwsCredential(credentialPath);
-        awsClient = initAwsClient();
-        lastLogEventStore = new LastLogEventStore("/usr/share/logstash/data/cloud_watch_logs_input/.db");
+        AWSLogs awsClient = initAwsClient();
+        LastLogEventStore lastLogEventStore = new LastLogEventStore("/usr/share/logstash/data/cloud_watch_logs_input/.db");
         logGroupService = new LogGroupService(awsClient);
         logStreamService = new LogStreamService(awsClient, lastLogEventStore);
-        groups = logGroupService.findLogGroup(groupName);
     }
 
     private AWSLogs initAwsClient() {
@@ -43,15 +45,32 @@ public class ReadCloudWatchLogs {
     }
 
     public void read() {
+        List<String> groups = logGroupService.findLogGroup(prefixGroup);
+        for (String group : groups) {
+            List<LogStream> streamForGroup = logGroupService.getStreamForGroup(group);
+            processLogStream(streamForGroup, group);
+        }
         groups.forEach(group ->
                 processLogStream(logGroupService.getStreamForGroup(group), group));
     }
 
-    private void processLogStream(List<LogStream> streams, String groupName) {
+    private void processLogStream(List<LogStream> streams, final String groupName) {
         streams.forEach(stream -> {
+            String cacheKey = groupName + "_" + stream.getLogStreamName();
+            LastLogEvent lastLogEvent = getLastLogEvent(groupName, stream, cacheKey);
+            cacheLastLogEvent.put(cacheKey, logStreamService.readLogs(lastLogEvent));
             log.error(stream.getLogStreamName());
-            logStreamService.readLogs(null);
         });
+    }
 
+    private LastLogEvent getLastLogEvent(final String groupName, final LogStream stream, final String cacheKey) {
+        if (cacheLastLogEvent.containsKey(cacheKey)) {
+            return cacheLastLogEvent.get(cacheKey);
+        } else {
+            return LastLogEvent.builder()
+                    .groupName(groupName)
+                    .logStreamName(stream.getLogStreamName())
+                    .build();
+        }
     }
 }
