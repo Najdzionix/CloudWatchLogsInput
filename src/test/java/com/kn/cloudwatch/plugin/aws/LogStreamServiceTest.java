@@ -54,7 +54,9 @@ public class LogStreamServiceTest {
                 .thenReturn(buildResult("next_token"))
                 .thenReturn(buildResult(null));
         // When
-        LastLogEvent result = service.readLogs(startLogEvent);
+        LastLogEvent result = service.readLogs(startLogEvent, stringObjectMap -> {
+            System.out.println(stringObjectMap.get("message"));
+        });
 
         // Then
         verify(awsLogs, times(2)).filterLogEvents(any(FilterLogEventsRequest.class));

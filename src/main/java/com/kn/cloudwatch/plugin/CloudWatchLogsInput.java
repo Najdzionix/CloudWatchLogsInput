@@ -3,11 +3,9 @@ package com.kn.cloudwatch.plugin;
 import co.elastic.logstash.api.*;
 import com.kn.cloudwatch.plugin.aws.ReadCloudWatchLogs;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
@@ -53,9 +51,10 @@ public class CloudWatchLogsInput implements Input {
         int eventCount = 0;
         try {
             while (!stopped && eventCount < count) {
-                eventCount++;
-                consumer.accept(Collections.singletonMap("message",
-                         " " + StringUtils.center(eventCount + " of " + count, 20)));
+                reader.read(consumer);
+//                eventCount++;
+//                consumer.accept(Collections.singletonMap("message",
+//                         " " + StringUtils.center(eventCount + " of " + count, 20)));
             }
         } finally {
             stopped = true;

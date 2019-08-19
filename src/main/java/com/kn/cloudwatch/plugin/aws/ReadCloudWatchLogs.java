@@ -11,6 +11,8 @@ import lombok.extern.log4j.Log4j2;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 
 
 /**
@@ -44,21 +46,21 @@ public class ReadCloudWatchLogs {
                 .withClientConfiguration(clientConfig).build();
     }
 
-    public void read() {
+    public void read(Consumer<Map<String, Object>> consumer) {
         List<String> groups = logGroupService.findLogGroup(prefixGroup);
         for (String group : groups) {
             List<LogStream> streamForGroup = logGroupService.getStreamForGroup(group);
-            processLogStream(streamForGroup, group);
+            processLogStream(streamForGroup, group, consumer);
         }
         groups.forEach(group ->
-                processLogStream(logGroupService.getStreamForGroup(group), group));
+                processLogStream(logGroupService.getStreamForGroup(group), group, consumer));
     }
 
-    private void processLogStream(List<LogStream> streams, final String groupName) {
+    private void processLogStream(List<LogStream> streams, final String groupName, Consumer<Map<String, Object>> consumer) {
         streams.forEach(stream -> {
             String cacheKey = groupName + "_" + stream.getLogStreamName();
             LastLogEvent lastLogEvent = getLastLogEvent(groupName, stream, cacheKey);
-            cacheLastLogEvent.put(cacheKey, logStreamService.readLogs(lastLogEvent));
+            cacheLastLogEvent.put(cacheKey, logStreamService.readLogs(lastLogEvent, consumer));
             log.debug("End process logstream:{} group: {} ", groupName, stream.getLogStreamName());
         });
     }
