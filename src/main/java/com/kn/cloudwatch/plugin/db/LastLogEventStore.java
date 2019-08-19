@@ -22,7 +22,6 @@ public class LastLogEventStore implements Closeable {
 
     public LastLogEventStore(String pathStore) {
         store = PersistentEntityStores.newInstance(pathStore);
-
     }
 
     public LastLogEvent saveOrUpdate(LastLogEvent logEvent) {
@@ -39,14 +38,13 @@ public class LastLogEventStore implements Closeable {
                 }
         );
 
-        log.error(entityId);
         logEvent.setStoreId(entityId);
+        log.debug("Saved last event from logstream: {}, logGroup: {}, time: {}", logEvent.getLogStreamName(), logEvent.getGroupName(), logEvent.getTimestamp());
         return logEvent;
     }
 
     public Optional<LastLogEvent> get(final EntityId entityId) {
         LastLogEvent lastLogEvent = store.computeInReadonlyTransaction(txn -> mapToLastLogEvent(txn.getEntity(entityId)));
-
         return Optional.of(lastLogEvent);
     }
 

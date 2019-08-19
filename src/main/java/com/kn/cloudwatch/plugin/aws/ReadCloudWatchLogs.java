@@ -59,7 +59,7 @@ public class ReadCloudWatchLogs {
             String cacheKey = groupName + "_" + stream.getLogStreamName();
             LastLogEvent lastLogEvent = getLastLogEvent(groupName, stream, cacheKey);
             cacheLastLogEvent.put(cacheKey, logStreamService.readLogs(lastLogEvent));
-            log.error(stream.getLogStreamName());
+            log.debug("End process logstream:{} group: {} ", groupName, stream.getLogStreamName());
         });
     }
 

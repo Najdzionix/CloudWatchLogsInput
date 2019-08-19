@@ -4,6 +4,7 @@ import jetbrains.exodus.entitystore.EntityId;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  * Created by Kamil Nadłonek on 18-08-2019
@@ -11,6 +12,7 @@ import lombok.Setter;
  */
 @Builder
 @Getter
+@ToString
 public class LastLogEvent {
     private final String groupName;
     private final String logStreamName;
