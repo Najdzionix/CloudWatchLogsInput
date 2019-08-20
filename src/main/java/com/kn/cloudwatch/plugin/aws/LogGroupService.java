@@ -28,7 +28,7 @@ class LogGroupService {
             DescribeLogGroupsRequest request = new DescribeLogGroupsRequest()
                     .withLogGroupNamePrefix(prefix)
                     .withNextToken(token.equals("") ? null : token);
-            DescribeLogGroupsResult describeLogGroupsResult = awsLogs.describeLogGroups(request);
+            DescribeLogGroupsResult describeLogGroupsResult = Commons.retryPolicy().get(() -> awsLogs.describeLogGroups(request));
             describeLogGroupsResult.getLogGroups().forEach(group -> groups.add(group.getLogGroupName()));
             token = describeLogGroupsResult.getNextToken();
         }

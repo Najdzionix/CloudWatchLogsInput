@@ -60,7 +60,7 @@ dependencies {
     compile fileTree(dir: LOGSTASH_CORE_PATH, include: "**/logstash-core-?.?.?.jar")
 
     compile group: 'com.amazonaws', name: 'aws-java-sdk-logs', version: '1.11.613'
-
+    compile group: 'net.jodah', name: 'failsafe', version: '2.3.0'
     compile 'org.jetbrains.xodus:xodus-openAPI:1.3.91'
     compile 'org.jetbrains.xodus:xodus-entity-store:1.3.91'
 

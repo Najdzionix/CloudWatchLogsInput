@@ -55,7 +55,7 @@ public class LogStreamServiceTest {
                 .thenReturn(buildResult(null));
         // When
         LastLogEvent result = service.readLogs(startLogEvent, stringObjectMap -> {
-            System.out.println(stringObjectMap.get("message"));
+            System.out.println(stringObjectMap.get("logGroup"));
         });
 
         // Then
