@@ -1,5 +1,6 @@
 package com.kn.cloudwatch.plugin.aws;
 
+import com.amazonaws.services.logs.model.AWSLogsException;
 import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.FailsafeExecutor;
 import net.jodah.failsafe.RetryPolicy;
@@ -14,7 +15,7 @@ import java.time.Duration;
 class Commons {
 
     private static final RetryPolicy<Object> retryPolicy = new RetryPolicy<>()
-            .handle(IOException.class)
+            .handle(IOException.class, AWSLogsException.class)
             .withDelay(Duration.ofSeconds(1))
             .withMaxRetries(3);
 

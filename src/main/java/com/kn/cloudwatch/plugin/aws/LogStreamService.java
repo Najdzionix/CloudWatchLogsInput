@@ -35,7 +35,12 @@ class LogStreamService {
                     .withNextToken(token.equals("") ? null : token);
 
             FilterLogEventsResult filterLogEventsResult = Commons.retryPolicy().get(() -> awsLogs.filterLogEvents(request));
+            boolean first = true;
             for (FilteredLogEvent awsLogEvent : filterLogEventsResult.getEvents()) {
+                if (first && last != null && last.getEventId().equals(awsLogEvent.getEventId())) {
+                    first = false;
+                    continue;
+                }
                 last = awsLogEvent;
                 consumer.accept(mapToLogstashFormat(last, lastLogEvent.getGroupName()));
             }
