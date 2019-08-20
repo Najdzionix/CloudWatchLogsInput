@@ -2,12 +2,14 @@ package com.kn.cloudwatch.plugin;
 
 import co.elastic.logstash.api.*;
 import com.kn.cloudwatch.plugin.aws.ReadCloudWatchLogs;
+import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 @Log4j2
@@ -22,14 +24,12 @@ public class CloudWatchLogsInput implements Input {
     private final CountDownLatch done = new CountDownLatch(1);
     private final ReadCloudWatchLogs reader;
     private String id;
-    private long count;
     private volatile boolean stopped;
 
     // all plugins must provide a constructor that accepts id, Configuration, and Context
     public CloudWatchLogsInput(String id, Configuration config, Context context) {
         // constructors should validate configuration options
         this.id = id;
-        count = config.get(EVENT_COUNT_CONFIG);
         reader = new ReadCloudWatchLogs(config.get(AWS_CREDENTIALS_PATH), config.get(LOG_GROUP_NAME));
 
     }
@@ -48,20 +48,22 @@ public class CloudWatchLogsInput implements Input {
 
         log.info("Start cloudwatch logs input ...");
 
-        int eventCount = 0;
         try {
-            while (!stopped && eventCount < count) {
+            while (!stopped) {
                 reader.read(consumer);
-//                eventCount++;
-//                consumer.accept(Collections.singletonMap("message",
-//                         " " + StringUtils.center(eventCount + " of " + count, 20)));
                 log.info("End process ... maybe sleep couple seconds ? .... ");
+                goSleep();
             }
         } finally {
             stopped = true;
-            done.countDown();
+            //TODO stop read logs from AWS 
             log.info("Stop cloudwatch logs input plugin.");
         }
+    }
+
+    @SneakyThrows
+    private void goSleep() {
+        TimeUnit.SECONDS.sleep(1);
     }
 
     @Override
