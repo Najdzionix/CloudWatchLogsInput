@@ -9,7 +9,6 @@ import com.kn.cloudwatch.plugin.db.LastLogEventStore;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -23,6 +22,7 @@ class LogStreamService {
 
     private final AWSLogs awsLogs;
     private final LastLogEventStore store;
+    private final Map<String, Object> logData;
 
     LastLogEvent readLogs(LastLogEvent lastLogEvent, Consumer<Map<String, Object>> consumer) {
         String token = "";
@@ -62,13 +62,12 @@ class LogStreamService {
     }
 
     private Map<String, Object> mapToLogstashFormat(FilteredLogEvent awsLog, String group) {
-        Map<String, Object> objectObjectMap = new HashMap<>();
-        objectObjectMap.put("message", awsLog.getMessage());
-        objectObjectMap.put("logGroup", group);
-        objectObjectMap.put("logStream", awsLog.getLogStreamName());
-        objectObjectMap.put("timestamp", awsLog.getTimestamp());
-        objectObjectMap.put("eventId", awsLog.getEventId());
-        return objectObjectMap;
+        logData.put("message", awsLog.getMessage());
+        logData.put("logGroup", group);
+        logData.put("logStream", awsLog.getLogStreamName());
+        logData.put("timestamp", awsLog.getTimestamp());
+        logData.put("eventId", awsLog.getEventId());
+        return logData;
     }
 
 }
