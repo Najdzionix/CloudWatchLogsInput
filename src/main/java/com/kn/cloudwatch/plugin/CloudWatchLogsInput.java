@@ -55,10 +55,12 @@ public class CloudWatchLogsInput implements Input {
 //                eventCount++;
 //                consumer.accept(Collections.singletonMap("message",
 //                         " " + StringUtils.center(eventCount + " of " + count, 20)));
+                log.info("End process ... maybe sleep couple seconds ? .... ");
             }
         } finally {
             stopped = true;
             done.countDown();
+            log.info("Stop cloudwatch logs input plugin.");
         }
     }
 

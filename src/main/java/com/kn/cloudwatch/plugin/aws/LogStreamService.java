@@ -9,7 +9,7 @@ import com.kn.cloudwatch.plugin.db.LastLogEventStore;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -27,7 +27,7 @@ class LogStreamService {
     LastLogEvent readLogs(LastLogEvent lastLogEvent, Consumer<Map<String, Object>> consumer) {
         String token = "";
         while (token != null) {
-            LogEvent last = null;
+            FilteredLogEvent last = null;
             FilterLogEventsRequest request = new FilterLogEventsRequest()
                     .withLogGroupName(lastLogEvent.getGroupName())
                     .withLogStreamNames(lastLogEvent.getLogStreamName())
@@ -36,8 +36,8 @@ class LogStreamService {
 
             FilterLogEventsResult filterLogEventsResult = awsLogs.filterLogEvents(request);
             for (FilteredLogEvent awsLogEvent : filterLogEventsResult.getEvents()) {
-                last = mapToLogEvent(awsLogEvent, lastLogEvent.getGroupName());
-                consumer.accept(Collections.singletonMap("message", last));
+                last = awsLogEvent;
+                consumer.accept(mapToLogstashFormat(last, lastLogEvent.getGroupName()));
             }
             token = filterLogEventsResult.getNextToken();
             if (last != null) {
@@ -50,20 +50,20 @@ class LogStreamService {
         return lastLogEvent;
     }
 
-    private LastLogEvent saveLastEvent(LogEvent logEvent, LastLogEvent lastLogEvent) {
-        lastLogEvent.setEventId(logEvent.getEventId());
-        lastLogEvent.setTimestamp(logEvent.getTimestamp());
+    private LastLogEvent saveLastEvent(FilteredLogEvent awsLogEvent, LastLogEvent lastLogEvent) {
+        lastLogEvent.setEventId(awsLogEvent.getEventId());
+        lastLogEvent.setTimestamp(awsLogEvent.getTimestamp());
         return store.saveOrUpdate(lastLogEvent);
     }
 
-    private LogEvent mapToLogEvent(FilteredLogEvent awsLogEvent, String logGroupName) {
-        return LogEvent.builder()
-                .eventId(awsLogEvent.getEventId())
-                .groupName(logGroupName)
-                .logStreamName(awsLogEvent.getLogStreamName())
-                .ingestionTime(awsLogEvent.getIngestionTime())
-                .timestamp(awsLogEvent.getTimestamp())
-                .message(awsLogEvent.getMessage())
-                .build();
+    private Map<String, Object> mapToLogstashFormat(FilteredLogEvent awsLog, String group) {
+        Map<String, Object> objectObjectMap = new HashMap<>();
+        objectObjectMap.put("message", awsLog.getMessage());
+        objectObjectMap.put("logGroup", group);
+        objectObjectMap.put("logStream", awsLog.getLogStreamName());
+        objectObjectMap.put("timestamp", awsLog.getTimestamp());
+        objectObjectMap.put("eventId", awsLog.getEventId());
+        return objectObjectMap;
     }
+
 }
