@@ -36,17 +36,7 @@ public class CloudWatchLogsInput implements Input {
 
     @Override
     public void start(Consumer<Map<String, Object>> consumer) {
-
-        // The start method should push Map<String, Object> instances to the supplied QueueWriter
-        // instance. Those will be converted to Event instances later in the Logstash event
-        // processing pipeline.
-        //
-        // Inputs that operate on unbounded streams of data or that poll indefinitely for new
-        // events should loop indefinitely until they receive a stop request. Inputs that produce
-        // a finite sequence of events should loop until that sequence is exhausted or until they
-        // receive a stop request, whichever comes first.
-
-        log.info("Start cloudwatch logs input ...");
+        log.info("Start CloudWatchLogsInput plugin...");
 
         try {
             while (!stopped) {
@@ -55,9 +45,9 @@ public class CloudWatchLogsInput implements Input {
                 goSleep();
             }
         } finally {
+            log.info("Stop CloudWatchLogsInput plugin.");
             stopped = true;
-            //TODO stop read logs from AWS 
-            log.info("Stop cloudwatch logs input plugin.");
+            done.countDown();
         }
     }
 
@@ -68,12 +58,13 @@ public class CloudWatchLogsInput implements Input {
 
     @Override
     public void stop() {
-        stopped = true; // set flag to request cooperative stop of input
+        stopped = true;
+        reader.stop();
     }
 
     @Override
     public void awaitStop() throws InterruptedException {
-        done.await(); // blocks until input has stopped
+        done.await(10, TimeUnit.SECONDS);
     }
 
     @Override

@@ -6,7 +6,6 @@ import com.amazonaws.services.logs.model.FilterLogEventsResult;
 import com.amazonaws.services.logs.model.FilteredLogEvent;
 import com.kn.cloudwatch.plugin.LastLogEvent;
 import com.kn.cloudwatch.plugin.db.LastLogEventStore;
-import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.HashMap;
@@ -18,12 +17,19 @@ import java.util.function.Consumer;
  * email:kamilnadlonek@gmail.com
  */
 @Log4j2
-@AllArgsConstructor
 class LogStreamService {
 
     private final AWSLogs awsLogs;
     private final LastLogEventStore store;
-    private final Map<String, Object> logData = new HashMap<>();
+    private final Map<String, Object> logData;
+    private boolean stoped;
+
+    LogStreamService(AWSLogs awsLogs, LastLogEventStore store) {
+        this.awsLogs = awsLogs;
+        this.store = store;
+        logData = new HashMap<>();
+        stoped = false;
+    }
 
     LastLogEvent readLogs(LastLogEvent lastLogEvent, Consumer<Map<String, Object>> consumer) {
         String token = "";
@@ -44,6 +50,9 @@ class LogStreamService {
                 }
                 last = awsLogEvent;
                 consumer.accept(mapToLogstashFormat(last, lastLogEvent.getGroupName()));
+                if(stoped) {
+                   return saveLastEvent(last, lastLogEvent);
+                }
             }
             token = filterLogEventsResult.getNextToken();
             if (last != null) {
@@ -69,6 +78,10 @@ class LogStreamService {
         logData.put("timestamp", awsLog.getTimestamp());
         logData.put("eventId", awsLog.getEventId());
         return logData;
+    }
+
+    void stop() {
+        stoped = true;
     }
 
 }

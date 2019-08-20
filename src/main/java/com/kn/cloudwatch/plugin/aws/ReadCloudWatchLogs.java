@@ -27,6 +27,7 @@ public class ReadCloudWatchLogs {
     private final LogStreamService logStreamService;
     private final String prefixGroup;
     private final HashMap<String, LastLogEvent> cacheLastLogEvent;
+    private boolean stoped;
 
     public ReadCloudWatchLogs(String credentialPath, String groupName) {
         this.prefixGroup = groupName;
@@ -36,6 +37,7 @@ public class ReadCloudWatchLogs {
         LastLogEventStore lastLogEventStore = new LastLogEventStore("/usr/share/logstash/data/cloud_watch_logs_input/.db");
         logGroupService = new LogGroupService(awsClient);
         logStreamService = new LogStreamService(awsClient, lastLogEventStore);
+        stoped = false;
     }
 
     private AWSLogs initAwsClient() {
@@ -49,11 +51,12 @@ public class ReadCloudWatchLogs {
     public void read(Consumer<Map<String, Object>> consumer) {
         List<String> groups = logGroupService.findLogGroup(prefixGroup);
         for (String group : groups) {
+            if (stoped) {
+                return;
+            }
             List<LogStream> streamForGroup = logGroupService.getStreamForGroup(group);
             processLogStream(streamForGroup, group, consumer);
         }
-        groups.forEach(group ->
-                processLogStream(logGroupService.getStreamForGroup(group), group, consumer));
     }
 
     private void processLogStream(List<LogStream> streams, final String groupName, Consumer<Map<String, Object>> consumer) {
@@ -74,5 +77,10 @@ public class ReadCloudWatchLogs {
                     .logStreamName(stream.getLogStreamName())
                     .build();
         }
+    }
+
+    public void stop() {
+        stoped = true;
+        logStreamService.stop();
     }
 }
