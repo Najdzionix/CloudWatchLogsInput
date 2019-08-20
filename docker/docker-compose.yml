@@ -1,5 +1,5 @@
 logstash:
   build: logstash/
 #  image: logstash-plugin
-#  volumes:
-#    - ${AWS_KEY_FILE}:/aws/crednetials/AWSCredentials.yaml:ro
+  volumes:
+    - ${AWS_CREDENTIAL_FILE}:/aws/crednetials:ro
