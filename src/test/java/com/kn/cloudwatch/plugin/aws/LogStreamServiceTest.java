@@ -79,13 +79,19 @@ public class LogStreamServiceTest {
 
     private FilterLogEventsResult buildResult(String token) {
         FilterLogEventsResult result = new FilterLogEventsResult();
-        FilteredLogEvent last = new FilteredLogEvent();
+        FilteredLogEvent last = defaultEvent();
         last.setEventId("LastEventId");
         last.setTimestamp(1234L);
-        result.setEvents(Arrays.asList(mock(FilteredLogEvent.class), mock(FilteredLogEvent.class), last));
+        result.setEvents(Arrays.asList(defaultEvent(), defaultEvent(), last));
         result.setNextToken(token);
         return result;
     }
 
+    private FilteredLogEvent defaultEvent() {
+        FilteredLogEvent event = new FilteredLogEvent();
+        event.setEventId(RandomStringUtils.randomAlphabetic(10));
+        event.setTimestamp(1L);
+        return event;
+    }
 
 }

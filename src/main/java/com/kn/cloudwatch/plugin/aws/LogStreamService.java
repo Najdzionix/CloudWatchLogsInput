@@ -9,6 +9,7 @@ import com.kn.cloudwatch.plugin.db.LastLogEventStore;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -22,7 +23,7 @@ class LogStreamService {
 
     private final AWSLogs awsLogs;
     private final LastLogEventStore store;
-    private final Map<String, Object> logData;
+    private final Map<String, Object> logData = new HashMap<>();
 
     LastLogEvent readLogs(LastLogEvent lastLogEvent, Consumer<Map<String, Object>> consumer) {
         String token = "";
