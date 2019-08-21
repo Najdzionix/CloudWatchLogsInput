@@ -1,10 +1,7 @@
 package com.kn.cloudwatch.plugin;
 
 import jetbrains.exodus.entitystore.EntityId;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 /**
  * Created by Kamil Nadłonek on 18-08-2019
@@ -13,6 +10,7 @@ import lombok.ToString;
 @Builder
 @Getter
 @ToString
+@EqualsAndHashCode
 public class LastLogEvent {
     private final String groupName;
     private final String logStreamName;

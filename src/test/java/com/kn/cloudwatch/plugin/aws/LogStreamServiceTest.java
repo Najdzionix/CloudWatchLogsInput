@@ -21,7 +21,8 @@ import java.util.Arrays;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 /**
  * Created by Kamil Nadłonek on 18-08-2019
@@ -65,6 +66,25 @@ public class LogStreamServiceTest {
         assertNotNull(result.getStoreId());
         assertEquals(startLogEvent.getGroupName(), result.getGroupName());
         assertEquals(startLogEvent.getLogStreamName(), result.getLogStreamName());
+    }
+
+    @Test
+    public void shouldStopReadLogsWhenCallStopMethod() {
+        // Given
+        LastLogEvent startLogEvent = create("test_plugin");
+        FilterLogEventsResult firstPart = buildResult("next_token");
+        Mockito.when(awsLogs.filterLogEvents(any(FilterLogEventsRequest.class)))
+                .thenReturn(firstPart)
+                .thenReturn(buildResult(null));
+        // When
+        service.stop();
+        LastLogEvent lastLogEvent = service.readLogs(startLogEvent, data -> {
+            System.out.println(data.get("logGroup"));
+        });
+
+        // Then
+        assertEquals(firstPart.getEvents().get(0).getEventId(), lastLogEvent.getEventId());
+        assertEquals(firstPart.getEvents().get(0).getTimestamp(), lastLogEvent.getTimestamp());
     }
 
     private LastLogEvent create(String group) {
