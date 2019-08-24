@@ -19,11 +19,13 @@ public class CloudWatchLogsInput implements Input {
 
     private final CountDownLatch done = new CountDownLatch(1);
     private final ReadCloudWatchLogs reader;
+    private final long interval;
     private String id;
     private volatile boolean stopped;
 
     public CloudWatchLogsInput(String id, Configuration config, Context context) {// constructors should validate configuration options
         this.id = id;
+        interval = getInterval(config);
         reader = new ReadCloudWatchLogs(getAwsCredentialPath(config), getLogGroupName(config));
     }
 
@@ -46,7 +48,7 @@ public class CloudWatchLogsInput implements Input {
 
     @SneakyThrows
     private void goSleep() {
-        TimeUnit.SECONDS.sleep(1);
+        TimeUnit.SECONDS.sleep(interval);
     }
 
     @Override
