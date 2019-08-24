@@ -1,8 +1,7 @@
 package com.kn.cloudwatch.plugin;
 
 import co.elastic.logstash.api.Configuration;
-import org.apache.commons.lang3.StringUtils;
-import org.junit.Assert;
+import co.elastic.logstash.api.PluginConfigSpec;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.logstash.plugins.ConfigurationImpl;
@@ -13,27 +12,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-   @Ignore
+// Rewrite test to integration test
+@Ignore
 public class CloudWatchLogsInputTest {
 
     @Test
     public void testCloudWatchLogsInputTest() {
-        String prefix = "This is message";
-        long eventCount = 5;
-        Map<String, Object> configValues = new HashMap<>();
-        configValues.put(CloudWatchLogsInput.LOG_GROUP_NAME.name(), prefix);
-        configValues.put(CloudWatchLogsInput.EVENT_COUNT_CONFIG.name(), eventCount);
-        Configuration config = new ConfigurationImpl(configValues);
+        // TODO setup local Aws CloudWatch Logs 
+        Configuration config = init();
         CloudWatchLogsInput input = new CloudWatchLogsInput("test-id", config, null);
         TestConsumer testConsumer = new TestConsumer();
         input.start(testConsumer);
 
         List<Map<String, Object>> events = testConsumer.getEvents();
-        Assert.assertEquals(eventCount, events.size());
-        for (int k = 1; k <= events.size(); k++) {
-            Assert.assertEquals(prefix + " " + StringUtils.center(k + " of " + eventCount, 20),
-                    events.get(k - 1).get("message"));
-        }
+
+    }
+
+    private Configuration init() {
+        List<PluginConfigSpec<?>> configSpecs = (List<PluginConfigSpec<?>>) PluginConfig.configSpecs();
+        Map<String, Object> configValues = new HashMap<>();
+        configValues.put(configSpecs.get(0).name(), "test_log_group");
+        configValues.put(configSpecs.get(1).name(), "/tmp/aws/credentials");
+        return new ConfigurationImpl(configValues);
     }
 
     private static class TestConsumer implements Consumer<Map<String, Object>> {
@@ -47,7 +47,7 @@ public class CloudWatchLogsInputTest {
             }
         }
 
-        public List<Map<String, Object>> getEvents() {
+        List<Map<String, Object>> getEvents() {
             return events;
         }
     }
