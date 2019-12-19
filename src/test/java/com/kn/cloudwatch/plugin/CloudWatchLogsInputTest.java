@@ -29,6 +29,7 @@ public class CloudWatchLogsInputTest {
     }
 
     private Configuration init() {
+        System.out.printf("TEST");
         List<PluginConfigSpec<?>> configSpecs = (List<PluginConfigSpec<?>>) PluginConfig.configSpecs();
         Map<String, Object> configValues = new HashMap<>();
         configValues.put(configSpecs.get(0).name(), "test_log_group");

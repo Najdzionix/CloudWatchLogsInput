@@ -1,6 +1,7 @@
 package com.kn.cloudwatch.plugin;
 
 import co.elastic.logstash.api.*;
+import com.kn.cloudwatch.plugin.aws.AwsCredential;
 import com.kn.cloudwatch.plugin.aws.ReadCloudWatchLogs;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
@@ -26,7 +27,7 @@ public class CloudWatchLogsInput implements Input {
     public CloudWatchLogsInput(String id, Configuration config, Context context) {// constructors should validate configuration options
         this.id = id;
         interval = getInterval(config);
-        reader = new ReadCloudWatchLogs(getAwsCredentialPath(config), getLogGroupNamePrefix(config));
+        reader = new ReadCloudWatchLogs(new AwsCredential(getAwsCredentialPath(config)), getLogGroupNamePrefix(config));
     }
 
     @Override

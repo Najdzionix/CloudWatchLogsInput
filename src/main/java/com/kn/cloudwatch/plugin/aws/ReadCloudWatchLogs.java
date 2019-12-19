@@ -1,9 +1,5 @@
 package com.kn.cloudwatch.plugin.aws;
 
-import com.amazonaws.ClientConfiguration;
-import com.amazonaws.regions.Regions;
-import com.amazonaws.services.logs.AWSLogs;
-import com.amazonaws.services.logs.AWSLogsClientBuilder;
 import com.amazonaws.services.logs.model.LogStream;
 import com.kn.cloudwatch.plugin.LastLogEvent;
 import com.kn.cloudwatch.plugin.db.LastLogEventStore;
@@ -22,30 +18,19 @@ import java.util.function.Consumer;
 @Log4j2
 public class ReadCloudWatchLogs {
 
-    private final AwsCredential credential;
     private final LogGroupService logGroupService;
     private final LogStreamService logStreamService;
     private final String prefixGroup;
     private final HashMap<String, LastLogEvent> cacheLastLogEvent;
     private boolean stoped;
 
-    public ReadCloudWatchLogs(String credentialPath, String groupName) {
+    public ReadCloudWatchLogs(AwsCredential credential, String groupName) {
         this.prefixGroup = groupName;
         cacheLastLogEvent = new HashMap<>();
-        credential = new AwsCredential(credentialPath);
-        AWSLogs awsClient = initAwsClient();
         LastLogEventStore lastLogEventStore = new LastLogEventStore("/usr/share/logstash/data/cloud_watch_logs_input/.db");
-        logGroupService = new LogGroupService(awsClient);
-        logStreamService = new LogStreamService(awsClient, lastLogEventStore);
+        logGroupService = new LogGroupService(credential.getAwsLogs());
+        logStreamService = new LogStreamService(credential.getAwsLogs(), lastLogEventStore);
         stoped = false;
-    }
-
-    private AWSLogs initAwsClient() {
-        ClientConfiguration clientConfig = new ClientConfiguration();
-        AWSLogsClientBuilder builder = AWSLogsClientBuilder.standard();
-        return builder.withCredentials(credential.getProvider())
-                .withRegion(Regions.EU_WEST_1)
-                .withClientConfiguration(clientConfig).build();
     }
 
     public void read(Consumer<Map<String, Object>> consumer) {
