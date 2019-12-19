@@ -26,7 +26,7 @@ public class CloudWatchLogsInput implements Input {
     public CloudWatchLogsInput(String id, Configuration config, Context context) {// constructors should validate configuration options
         this.id = id;
         interval = getInterval(config);
-        reader = new ReadCloudWatchLogs(getAwsCredentialPath(config), getLogGroupName(config));
+        reader = new ReadCloudWatchLogs(getAwsCredentialPath(config), getLogGroupNamePrefix(config));
     }
 
     @Override

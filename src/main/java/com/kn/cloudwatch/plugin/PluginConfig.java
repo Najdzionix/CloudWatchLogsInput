@@ -18,13 +18,13 @@ import static co.elastic.logstash.api.PluginConfigSpec.*;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 class PluginConfig {
 
-    private static final PluginConfigSpec<String> LOG_GROUP_NAME = requiredStringSetting("log_group_name");
+    private static final PluginConfigSpec<String> LOG_GROUP_NAME_PREFIX = requiredStringSetting("log_group_name_prefix");
     private static final PluginConfigSpec<String> AWS_CREDENTIALS_PATH = stringSetting("aws_credential_path", "/aws/credentials/");
     private static final PluginConfigSpec<Long> INTERVAL = numSetting("interval", 30);
     private static final PluginConfigSpec<List<Object>> TAGS = arraySetting("tags");
 
-    static String getLogGroupName(Configuration config) {
-        return config.get(LOG_GROUP_NAME);
+    static String getLogGroupNamePrefix(Configuration config) {
+        return config.get(LOG_GROUP_NAME_PREFIX);
     }
 
     static String getAwsCredentialPath(Configuration config) {
@@ -40,6 +40,6 @@ class PluginConfig {
     }
 
     static Collection<PluginConfigSpec<?>> configSpecs() {
-        return Arrays.asList(LOG_GROUP_NAME, AWS_CREDENTIALS_PATH, INTERVAL, TAGS);
+        return Arrays.asList(LOG_GROUP_NAME_PREFIX, AWS_CREDENTIALS_PATH, INTERVAL, TAGS);
     }
 }

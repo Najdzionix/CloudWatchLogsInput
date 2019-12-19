@@ -3,3 +3,4 @@ logstash:
 #  image: logstash-plugin
   volumes:
     - ${AWS_CREDENTIAL_FILE}:/aws/crednetials:ro
+    - ./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
